@@ -66,6 +66,9 @@ def generate_pairs(users: [str], previous_partners: {str: [str]}) -> [(str, str)
             for available in users:
                 if available not in partners:
                     pairs.append((user, available))
+    
+    else:   #odd
+    # gotta fix this whelp
     return users
 
 # Create Group Chats
@@ -77,16 +80,19 @@ def generate_pairs(users: [str], previous_partners: {str: [str]}) -> [(str, str)
 #   Post
 #       A new groupchat with the users will be created in Slack       
 def create_group_chat(users: [str]):
+    # Open a groupchat with all users in users
     api_call = slack_client.conversations_open(users = users)
+    # Retrieve channel information
     channel_info = api_call['channel']
-    from slack.errors import SlackApiError
+
     try:
+        # If the groupchat was made, post a message
         response = slack_client.chat_postMessage(
             channel = channel_info["id"],
             text = "Matchy here, meet your new partner and get to know them!" 
         )
     except SlackApiError as e:
-    # You will get a SlackApiError if "ok" is False
+        # If "ok" is False, assertion
         assert e.response["error"]  # str like 'invalid_auth', 'channel_not_found'
     return
 
