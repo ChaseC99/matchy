@@ -5,7 +5,7 @@ import slack
 import secrets
 
 # Global Variables
-match_channel ="#"      # Channel that the pairs come from
+match_channel ="C01AU7UCNGN"      # Channel that the pairs come from (#bot-playground)
 partners_file = ""      # JSON file that contains previous partners
 
 # Slack Client
@@ -47,8 +47,6 @@ def get_channel_members(channel: str) -> [str]:
     api_call = slack_client.conversations_members(channel = channel)
     users_id = api_call["members"]
     return users_id;
-    # if api_call.get('ok'):
-    #     return api_call['members']
 
 # Generate Pairs
 #   Given a list of users and their previous partners, generate pairs or users.
