@@ -44,7 +44,11 @@ def save_partners(new_pairs: [(str, str)], previous_partners: {str: [str]}):
 #   Returns 
 #       List of slack ids for the users in the channel
 def get_channel_members(channel: str) -> [str]:
-    return []
+    api_call = slack_client.conversations_members(channel = channel)
+    users_id = api_call["members"]
+    return users_id;
+    # if api_call.get('ok'):
+    #     return api_call['members']
 
 # Generate Pairs
 #   Given a list of users and their previous partners, generate pairs or users.
