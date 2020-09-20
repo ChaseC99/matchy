@@ -3,11 +3,18 @@
 # Imports
 import slack
 import json
+from random import randrange
 import secrets
 
 # Global Variables
-match_channel ="C01AU7UCNGN"      # Channel that the pairs come from (#bot-playground)
-partners_file = "partners.json"      # JSON file that contains previous partners
+match_channel = "C01AU7UCNGN"       # Channel that the pairs come from (#bot-playground)
+partners_file = "partners.json"     # JSON file that contains previous partners
+intro_message = '''
+_Wing, wing_ :telephone_receiver: 
+Hey %s! 
+You have been matched this week :hatching_chick:
+Go ahead and figure out _wren_ (when) you're both free to meet up for a virtual meeting :smile:
+'''
 
 # Slack Client
 slack_client = slack.WebClient(secrets.oauth_token)
@@ -34,17 +41,20 @@ def load_previous_partners() -> dict:
 #   previous partner pairs and saves it to the partner_file.
 #
 #   Params
-#       new_pairs: [(str, str)]             - List of pairs
+#       new_pairs: [[str, str]]             - List of pairs
 #       previous_partners: {str: [str]}     - Previous partners loaded from file
 #
 #   Post
 #       Overwrites the partner_file to be the updated JSON
-def save_partners(new_pairs: [(str, str)], previous_partners: {str: [str]}):
+def save_partners(new_pairs: [[str, str]], previous_partners: {str: [str]}):
     # Iterate over each pair and add every partner to the prev partners dict
     for pair in new_pairs:
         for user in pair:
             for partner in pair:
+                # Since we iterate over pair twice, we have to ignore the
+                # the iteration where user == partner
                 if not user == partner:
+                    # Add the new partner to the previous_partners
                     if user in previous_partners:
                         previous_partners[user].append(partner)
                     else:
@@ -66,7 +76,7 @@ def save_partners(new_pairs: [(str, str)], previous_partners: {str: [str]}):
 def get_channel_members(channel: str) -> [str]:
     api_call = slack_client.conversations_members(channel = channel)
     users_id = api_call["members"]
-    return users_id;
+    return users_id
 
 # Generate Pairs
 #   Given a list of users and their previous partners, generate pairs or users.
@@ -78,18 +88,56 @@ def get_channel_members(channel: str) -> [str]:
 #       previous_partners: {str: [str]}     - Previous partners for each user
 #
 #   Returns
-#       List of pairs of users [(str, str)]
-def generate_pairs(users: [str], previous_partners: {str: [str]}) -> [(str, str)]:
+#       List of pairs of users [[str, str]]
+def generate_pairs(users: [str], previous_partners: {str: [str]}) -> [[str, str]]:
     pairs = []
-    if (len(users) % 2) == 0:   #even
-        for user, partners in previous_partners.items():
-            for available in users:
-                if available not in partners:
-                    pairs.append((user, available))
+    is_odd = len(users)%2 == 1
     
-    else:   #odd
-    # gotta fix this whelp
-    return users
+    # The pairing algorithm only works with an even number of people.
+    # So if there are an odd number of people, we need to remove one
+    # and randomly assign them to a group of three at the end.
+    if is_odd:
+        odd_one_out = users.pop(randrange(len(users)))
+        
+    # Loop until there are no more unpaired users
+    while users:
+        # Get a random user from the list
+        user = users.pop(randrange(len(users)))
+        pulled_users = set()
+        
+        # Continue searching for a partner is found
+        while True:
+            # Pull a random partner from users
+            partner = users.pop(randrange(len(users)))
+            
+            # See if this user has had any prev partners
+            if not user in previous_partners:
+                break
+
+            # See if this partner was a prev partner
+            elif not partner in previous_partners[user]:
+                break
+            
+            # Give up if there are no remaining potential partners
+            elif len(users) == 0:
+                #TODO: pick least recently paired user from pulled_users
+                break
+            
+            # Otherwise toss them aside and keep searching
+            else:
+                pulled_users.add(partner)
+
+        # Add the new pair to pairs
+        pairs.append([user,partner])
+
+        # Put the previous partners back into users
+        users += list(pulled_users)
+
+    # Randomly assign the odd one out to a group of three
+    if is_odd:
+        pairs[randrange(len(pairs))].append(odd_one_out)
+
+    return pairs
 
 # Create Group Chats
 #   Given a list of users, create a new groupchat.
@@ -98,24 +146,41 @@ def generate_pairs(users: [str], previous_partners: {str: [str]}) -> [(str, str)
 #       users: [str]    - List of users to add to the groupchat
 #
 #   Post
-#       A new groupchat with the users will be created in Slack       
-def create_group_chat(users: [str]):
+#       A new groupchat with the users will be created in Slack
+#       Returns the ID of the groupchat       
+def create_group_chat(users: [str]) -> str:
     # Open a groupchat with all users in users
     api_call = slack_client.conversations_open(users = users)
-    # Retrieve channel information
-    channel_info = api_call['channel']
+    
+    # Retrieve and return ID of the groupchat
+    return api_call['channel']['id']
 
-    try:
-        # If the groupchat was made, post a message
-        response = slack_client.chat_postMessage(
-            channel = channel_info["id"],
-            text = "Matchy here, meet your new partner and get to know them!" 
-        )
-    except SlackApiError as e:
-        # If "ok" is False, assertion
-        assert e.response["error"]  # str like 'invalid_auth', 'channel_not_found'
-    return
+# Send Group Intro Message
+#   Given a group ID, send the group an introduction message.
+#
+#   Params
+#       group_id: str   - ID of the group to message
+#       users: [str]    - List of users in the groupchat
+#
+#   Post
+#       Sends a message to the group
+def send_group_intro_message(group_id: str, users: [str]):
+    # Post a message to the group
+    response = slack_client.chat_postMessage(
+        channel = group_id,
+        text = intro_message % _generate_usernames(users)
+    )
 
+# Generate Usernames
+#   Given a list of users, we need to format it for slack
+#
+#   Params
+#       users: [str]    - List of user IDs
+#
+#   Returns
+#       String with the format: "<@ID>, <@ID>"
+def _generate_usernames(users: [str]) -> str:
+    return "<@" + ">, <@".join(users) + ">"
 
 if __name__ == "__main__":
     # Load previous partners from /logs
@@ -131,6 +196,7 @@ if __name__ == "__main__":
     save_partners(new_pairs, previous_partners)
 
     # Create a groupchat on Slack for each pair
-    # for pair in new_pairs:
-        # create_group_chat(pair)
-    create_group_chat(new_pairs)    # for testing
+    for pair in new_pairs:
+        print(pair)
+        group_id = create_group_chat(pair)
+        send_group_intro_message(group_id, pair)
