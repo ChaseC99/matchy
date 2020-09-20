@@ -6,7 +6,7 @@ import json
 import secrets
 
 # Global Variables
-match_channel ="#"      # Channel that the pairs come from
+match_channel ="C01AU7UCNGN"      # Channel that the pairs come from (#bot-playground)
 partners_file = "partners.json"      # JSON file that contains previous partners
 
 # Slack Client
@@ -64,7 +64,9 @@ def save_partners(new_pairs: [(str, str)], previous_partners: {str: [str]}):
 #   Returns 
 #       List of slack ids for the users in the channel
 def get_channel_members(channel: str) -> [str]:
-    return []
+    api_call = slack_client.conversations_members(channel = channel)
+    users_id = api_call["members"]
+    return users_id;
 
 # Generate Pairs
 #   Given a list of users and their previous partners, generate pairs or users.
@@ -78,7 +80,16 @@ def get_channel_members(channel: str) -> [str]:
 #   Returns
 #       List of pairs of users [(str, str)]
 def generate_pairs(users: [str], previous_partners: {str: [str]}) -> [(str, str)]:
-    return []
+    pairs = []
+    if (len(users) % 2) == 0:   #even
+        for user, partners in previous_partners.items():
+            for available in users:
+                if available not in partners:
+                    pairs.append((user, available))
+    
+    else:   #odd
+    # gotta fix this whelp
+    return users
 
 # Create Group Chats
 #   Given a list of users, create a new groupchat.
@@ -89,6 +100,20 @@ def generate_pairs(users: [str], previous_partners: {str: [str]}) -> [(str, str)
 #   Post
 #       A new groupchat with the users will be created in Slack       
 def create_group_chat(users: [str]):
+    # Open a groupchat with all users in users
+    api_call = slack_client.conversations_open(users = users)
+    # Retrieve channel information
+    channel_info = api_call['channel']
+
+    try:
+        # If the groupchat was made, post a message
+        response = slack_client.chat_postMessage(
+            channel = channel_info["id"],
+            text = "Matchy here, meet your new partner and get to know them!" 
+        )
+    except SlackApiError as e:
+        # If "ok" is False, assertion
+        assert e.response["error"]  # str like 'invalid_auth', 'channel_not_found'
     return
 
 
@@ -106,6 +131,6 @@ if __name__ == "__main__":
     save_partners(new_pairs, previous_partners)
 
     # Create a groupchat on Slack for each pair
-    for pair in new_pairs:
-        create_group_chat(pair)
-
+    # for pair in new_pairs:
+        # create_group_chat(pair)
+    create_group_chat(new_pairs)    # for testing
