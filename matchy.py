@@ -4,10 +4,10 @@
 import slack
 import json
 from random import randrange
-import secrets
+import config
 
 # Global Variables
-match_channel = "C01AU7UCNGN"       # Channel that the pairs come from (#bot-playground)
+match_channel = config.CHANNEL      # Channel that the pairs come from (#bot-playground)
 partners_file = "partners.json"     # JSON file that contains previous partners
 intro_message = '''
 _Wing, wing_ :telephone_receiver: 
@@ -17,7 +17,7 @@ Go ahead and figure out _wren_ (when) you're both free to meet up for a virtual 
 '''
 
 # Slack Client
-slack_client = slack.WebClient(secrets.oauth_token)
+slack_client = slack.WebClient(config.OAUTH_TOKEN)
 
 
 # Load Previous Partners
