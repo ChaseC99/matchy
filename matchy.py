@@ -71,6 +71,7 @@ def generate_pairs(users: [str], previous_partners: {str: [str]}) -> [(str, str)
 #   Post
 #       A new groupchat with the users will be created in Slack       
 def create_group_chat(users: [str]):
+    api_call = slack_client.conversations_open(users = users)
     return
 
 
