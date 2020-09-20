@@ -2,11 +2,12 @@
 
 # Imports
 import slack
+import json
 import secrets
 
 # Global Variables
 match_channel ="C01AU7UCNGN"      # Channel that the pairs come from (#bot-playground)
-partners_file = ""      # JSON file that contains previous partners
+partners_file = "partners.json"      # JSON file that contains previous partners
 
 # Slack Client
 slack_client = slack.WebClient(secrets.oauth_token)
@@ -19,7 +20,14 @@ slack_client = slack.WebClient(secrets.oauth_token)
 #   Returns 
 #       Dict {str: [str]} where the strings are user IDs
 def load_previous_partners() -> dict:
-    return dict()
+    # Attempt to open the partners_file
+    try:
+        # If it exists, return the json object
+        with open(partners_file) as json_file:
+            return json.load(json_file)
+    except:
+        # If it doesn't exist, return an empty dict
+        return dict()
 
 # Save Partners
 #   Given the new pairs and the previous partners, this computes a new JSON for
@@ -32,7 +40,19 @@ def load_previous_partners() -> dict:
 #   Post
 #       Overwrites the partner_file to be the updated JSON
 def save_partners(new_pairs: [(str, str)], previous_partners: {str: [str]}):
-    return
+    # Iterate over each pair and add every partner to the prev partners dict
+    for pair in new_pairs:
+        for user in pair:
+            for partner in pair:
+                if not user == partner:
+                    if user in previous_partners:
+                        previous_partners[user].append(partner)
+                    else:
+                        previous_partners[user] = [partner]
+
+    # Write the updated json to partners_file
+    with open(partners_file, 'w') as json_file:
+        json.dump(previous_partners, json_file)    
 
 
 # Get Channel Members
