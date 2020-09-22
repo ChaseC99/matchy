@@ -6,15 +6,20 @@ import json
 from random import randrange
 import config
 
-# Global Variables
-match_channel = config.CHANNEL      # Channel that the pairs come from (#bot-playground)
-partners_file = "partners.json"     # JSON file that contains previous partners
+
+# Intro message that gets sent to groups
+# Put `%s` wherever you'd like the usernames to appear
 intro_message = '''
 _Wing, wing_ :telephone_receiver: 
 Hey %s! 
 You have been matched this week :hatching_chick:
 Go ahead and figure out _wren_ (when) you're both free to meet up for a virtual meeting :smile:
 '''
+
+
+# Global Variables
+match_channel = config.CHANNEL      # Channel that the pairs come from (#bot-playground)
+partners_file = "partners.json"     # JSON file that contains previous partners
 
 # Slack Client
 slack_client = slack.WebClient(config.OAUTH_TOKEN)
@@ -197,6 +202,6 @@ if __name__ == "__main__":
 
     # Create a groupchat on Slack for each pair
     for pair in new_pairs:
-        print(pair)
         group_id = create_group_chat(pair)
         send_group_intro_message(group_id, pair)
+        print(pair, group_id)
