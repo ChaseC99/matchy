@@ -19,6 +19,7 @@ Go ahead and figure out _wren_ (when) you're both free to meet up for a virtual 
 
 # Global Variables
 match_channel = config.CHANNEL      # Channel that the pairs come from (#bot-playground)
+ignore_list = config.IGNORE_LIST    # Set of user to ignore when forming generating pairs
 partners_file = "partners.json"     # JSON file that contains previous partners
 
 # Slack Client
@@ -96,11 +97,14 @@ def get_channel_members(channel: str) -> [str]:
 #       List of pairs of users [[str, str]]
 def generate_pairs(users: [str], previous_partners: {str: [str]}) -> [[str, str]]:
     pairs = []
-    is_odd = len(users)%2 == 1
+
+    # Remove users on the ignore list
+    users = _remove_ignored_users(users)
     
     # The pairing algorithm only works with an even number of people.
     # So if there are an odd number of people, we need to remove one
     # and randomly assign them to a group of three at the end.
+    is_odd = len(users)%2 == 1
     if is_odd:
         odd_one_out = users.pop(randrange(len(users)))
         
@@ -143,6 +147,20 @@ def generate_pairs(users: [str], previous_partners: {str: [str]}) -> [[str, str]
         pairs[randrange(len(pairs))].append(odd_one_out)
 
     return pairs
+
+# Remove Ignored Users
+#   Given a list of users, remove the ones that are or the ignore_list
+#
+#   Params
+#       users: [str]    - List of users
+#
+#   Returns
+#       List of users, excluding those on the ignore list
+def _remove_ignored_users(users: [str]) -> [str]:
+    validated_users = []
+    for user in users:
+        if not user in ignore_list: validated_users.append(user)
+    return validated_users
 
 # Create Group Chats
 #   Given a list of users, create a new groupchat.
