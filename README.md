@@ -4,7 +4,7 @@ A Slack Bot that pairs people in a given channel to meet up for a one-on-one.
 ### Introduction
 Coronavirus has taken away the social norms of creating friends in-person. Nowadays, it's difficult to meet new people, form bonds, and foster community. This is especially true for large organizations whose members can no longer meet face to face. With Matchy in your Slack workspace, freely *spread your wings* and start forming new connections while building a sense of community within your org!
 
-![MatchyLogo](matchy_logo.jpg)
+![MatchyLogo](https://raw.githubusercontent.com/ChaseC99/matchy/master/assets/small_matchy_logo.jpg)
 
 ### Features
 On command, this Slack Bot:
