@@ -1,21 +1,23 @@
 # Matchy
 A Slack Bot that pairs people in a given channel to meet up for a one-on-one.
 
-### Introduction
+![Example Message](assets/example_message.png)
+
+## Introduction
 Coronavirus has taken away the social norms of creating friends in-person. Nowadays, it's difficult to meet new people, form bonds, and foster community. This is especially true for large organizations whose members can no longer meet face to face. With Matchy in your Slack workspace, freely *spread your wings* and start forming new connections while building a sense of community within your org!
 
-![MatchyLogo](https://raw.githubusercontent.com/ChaseC99/matchy/master/assets/small_matchy_logo.jpg)
+![MatchyLogo](assets/small_matchy_logo.jpg)
 
-### Features
+## Features
 On command, this Slack Bot:
 * Introduces each user in a channel to a fellow, randomized, member on the team.
 * Instigates one-on-one virtual meetings for its paired users.
 * Keeps track of previously paired users to more evenly distribute the pairings.
 
-### Dependencies
+## Dependencies
 Slack : `pip install slackclient`
 
-### Running Matchy  
+## Running Matchy  
 To get Matchy running in your Slack Workspace, follow the steps below:
 - [Create a new Slack App](https://api.slack.com/apps) install it in your Slack Workspace
   - Update the `Display Information` to add the Matchy name and logo
@@ -33,6 +35,6 @@ To get Matchy running in your Slack Workspace, follow the steps below:
 
 Previous partners will be stored to the file called `partners.json`.
 
-### Contributors
+## Contributors
 - [@ChaseC99](https://github.com/ChaseC99)
 - [@ell-ml](https://github.com/ell-ml)
