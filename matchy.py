@@ -205,6 +205,28 @@ def send_group_intro_message(group_id: str, users: [str]):
 def _generate_usernames(users: [str]) -> str:
     return "<@" + ">, <@".join(users) + ">"
 
+
+# Send Group Reminder Messages
+#   Given a list of group IDs, send each group a message reminder.
+#   Note(chase): this code isn't currently used anywhere in matchy.py
+#   I just call it manually in the Python shell
+#
+#   Params
+#       group_ids: [str]    - List of group IDs
+#
+#   Post
+#       Sends a reminder message to each group
+reminder_message = '''
+Have you gotten a chance to meet yet? Make sure to do so before the next pairs go out!
+'''
+def send_group_reminder_message(group_ids: [str], message=reminder_message):
+    for group_id in group_ids:
+        response = slack_client.chat_postMessage(
+            channel = group_id,
+            text = message
+        )
+
+
 if __name__ == "__main__":
     # Load previous partners from /logs
     previous_partners = load_previous_partners()
