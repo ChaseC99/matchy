@@ -26,11 +26,12 @@ To get Matchy running in your Slack Workspace, follow the steps below:
     - chat:write
     - mpim:write
   - Install into your workspace and retrieve the *Bot User OAuth Access Token*!
-- Create a file in your `matchy/` directory called `config.py` and add these lines:
+- Install the project dependencies `$ pip3 install -r requirements.txt`
+- Create a file in your `matchy/` directory called `config.py` by renaming `config.sample.py`. It should contain the following lines:
 ```
 OAUTH_TOKEN = ''    # Bot User OAuth Access Token from Slack.
 CHANNEL     = ''    # ID of your channel. You can find this by right clicking on the channel, selecting "Copy Link", and taking the ID at the end of the URL.
-IGNORE_LIST = []    # Any user IDs that you would like to ignore when generating pairs.
+IGNORE_LIST = {}    # Any user IDs that you would like to ignore when generating pairs.
 ```
 - Finally, run Matchy to pair people in the channel. You will need to run Matchy each time you want new pairings to go out:
   - `python matchy.py`
