@@ -1,0 +1,21 @@
+_metadata:
+  major_version: 1
+  minor_version: 1
+display_information:
+  name: Matchy
+  description: Fostering new connections through Slack
+  background_color: "#866f94"
+features:
+  bot_user:
+    display_name: Matchy
+    always_online: false
+oauth_config:
+  scopes:
+    bot:
+      - channels:read
+      - chat:write
+      - mpim:write
+settings:
+  org_deploy_enabled: false
+  socket_mode_enabled: false
+  token_rotation_enabled: false
