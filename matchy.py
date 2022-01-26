@@ -10,10 +10,9 @@ import config
 # Intro message that gets sent to groups
 # Put `%s` wherever you'd like the usernames to appear
 intro_message = '''
-_Wing, wing_ :telephone_receiver: 
 Hey %s! 
 You have been matched this week :hatching_chick:
-Go ahead and figure out _wren_ (when) you're both free to meet up for a virtual meeting :smile:
+Go ahead and figure out when you're both free to meet up for a virtual meeting :smile:
 '''
 
 
