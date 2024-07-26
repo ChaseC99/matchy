@@ -5,6 +5,7 @@ import slack
 import json
 from random import randrange
 import config
+from time import sleep
 
 
 # Intro message that gets sent to groups
@@ -20,6 +21,7 @@ Go ahead and figure out when you're both free to meet up for a virtual meeting :
 match_channel = config.CHANNEL      # Channel that the pairs come from (#bot-playground)
 ignore_list = config.IGNORE_LIST    # Set of user to ignore when forming generating pairs
 partners_file = "partners.json"     # JSON file that contains previous partners
+avoid_rate_limits = True            # Flag to sleep before making API calls to avoid rate limits
 
 # Slack Client
 slack_client = slack.WebClient(config.OAUTH_TOKEN)
@@ -79,10 +81,26 @@ def save_partners(new_pairs: [[str, str]], previous_partners: {str: [str]}):
 #   Returns 
 #       List of slack ids for the users in the channel
 def get_channel_members(channel: str) -> [str]:
-    #overriding default limit=100 to get all channel members regardless of channel size
-    api_call = slack_client.conversations_members(channel = channel, limit=2**32)
-    users_id = api_call["members"]
-    return users_id
+    #pagination to get all users in the channel 
+    channel_members = []
+
+    api_call = slack_client.conversations_members(channel = channel, limit=200)
+    user_ids = api_call["members"]
+    channel_members += user_ids
+
+    cursor = api_call["response_metadata"]["next_cursor"]
+
+    while cursor: 
+        #Tier 2 rate limits: https://api.slack.com/methods/conversations.members
+        if avoid_rate_limits:
+            sleep(3)
+        api_call = slack_client.conversations_members(channel = channel, limit=200, cursor = cursor)
+        user_ids = api_call["members"]
+        channel_members += user_ids
+
+        cursor = api_call["response_metadata"]["next_cursor"]
+
+    return channel_members
 
 # Generate Pairs
 #   Given a list of users and their previous partners, generate pairs or users.
@@ -225,7 +243,7 @@ def send_group_reminder_message(group_ids: [str], message=reminder_message):
             channel = group_id,
             text = message
         )
-
+       
 
 if __name__ == "__main__":
     # Load previous partners from /logs
@@ -242,6 +260,9 @@ if __name__ == "__main__":
 
     # Create a groupchat on Slack for each pair
     for pair in new_pairs:
+        #Bottleneck rate limit here is conversations.open (Tier 3)
+        if avoid_rate_limits:
+            sleep(2)
         group_id = create_group_chat(pair)
         send_group_intro_message(group_id, pair)
         print(pair, group_id)
